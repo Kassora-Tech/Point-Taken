@@ -59,21 +59,21 @@
   --ptg-muted: #9A9A9A;
   --background: #0A0A0A;
   --foreground: #F5F5F5;
-  --card: #1A1A1A;
+  --card: #111111;
   --card-foreground: #F5F5F5;
-  --popover: #1A1A1A;
+  --popover: #111111;
   --popover-foreground: #F5F5F5;
   --primary: #C0152A;
   --primary-foreground: #F5F5F5;
-  --secondary: #1A1A1A;
+  --secondary: #111111;
   --secondary-foreground: #F5F5F5;
   --muted: #2A2A2A;
   --muted-foreground: #9A9A9A;
   --accent: #C0152A;
   --accent-foreground: #F5F5F5;
   --destructive: #8B0D1C;
-  --border: rgba(255,255,255,0.1);
-  --input: rgba(255,255,255,0.15);
+  --border: rgba(255,255,255,0.08);
+  --input: rgba(255,255,255,0.12);
   --ring: #C0152A;
   --radius: 0.625rem;
   --chart-1: #C0152A;
@@ -87,28 +87,28 @@
   --sidebar-primary-foreground: #F5F5F5;
   --sidebar-accent: #C0152A;
   --sidebar-accent-foreground: #F5F5F5;
-  --sidebar-border: rgba(255,255,255,0.1);
+  --sidebar-border: rgba(255,255,255,0.08);
   --sidebar-ring: #C0152A;
 }
 
 .dark {
   --background: #0A0A0A;
   --foreground: #F5F5F5;
-  --card: #1A1A1A;
+  --card: #111111;
   --card-foreground: #F5F5F5;
-  --popover: #1A1A1A;
+  --popover: #111111;
   --popover-foreground: #F5F5F5;
   --primary: #C0152A;
   --primary-foreground: #F5F5F5;
-  --secondary: #1A1A1A;
+  --secondary: #111111;
   --secondary-foreground: #F5F5F5;
   --muted: #2A2A2A;
   --muted-foreground: #9A9A9A;
   --accent: #C0152A;
   --accent-foreground: #F5F5F5;
   --destructive: #8B0D1C;
-  --border: rgba(255,255,255,0.1);
-  --input: rgba(255,255,255,0.15);
+  --border: rgba(255,255,255,0.08);
+  --input: rgba(255,255,255,0.12);
   --ring: #C0152A;
   --chart-1: #C0152A;
   --chart-2: #E8354A;
@@ -121,7 +121,7 @@
   --sidebar-primary-foreground: #F5F5F5;
   --sidebar-accent: #C0152A;
   --sidebar-accent-foreground: #F5F5F5;
-  --sidebar-border: rgba(255,255,255,0.1);
+  --sidebar-border: rgba(255,255,255,0.08);
   --sidebar-ring: #C0152A;
 }
 
@@ -147,14 +147,40 @@
   text-wrap: balance;
 }
 
+/* Marquee */
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-
 .animate-marquee {
   display: flex;
   animation: marquee 30s linear infinite;
+}
+
+/* Orbital Ring Animations */
+@keyframes orbit-cw {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes orbit-ccw {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+@keyframes counter-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+.ring-outer {
+  animation: orbit-cw 30s linear infinite;
+}
+.ring-inner {
+  animation: orbit-ccw 20s linear infinite;
+}
+.ring-outer .node-label {
+  animation: counter-rotate 30s linear infinite;
+}
+.ring-inner .node-label {
+  animation: orbit-cw 20s linear infinite;
 }
 
 @layer utilities {
@@ -162,6 +188,10 @@
     background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
     background-size: 40px 40px;
+  }
+  .bg-dot-pattern {
+    background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
   .text-gradient-red {
     background: linear-gradient(135deg, #C0152A, #E8354A);
@@ -174,5 +204,9 @@
   }
   .glow-red-sm {
     box-shadow: 0 0 20px rgba(192,21,42,0.15);
+  }
+  .text-stroke {
+    -webkit-text-stroke: 1px rgba(192,21,42,0.3);
+    -webkit-text-fill-color: transparent;
   }
 }
