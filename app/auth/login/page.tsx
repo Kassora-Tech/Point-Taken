@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -17,25 +16,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [magicLinkLoading, setMagicLinkLoading] = useState(false)
-  const [checkingAuth, setCheckingAuth] = useState(true)
-  const router = useRouter()
-
-  useEffect(() => {
-    async function checkSession() {
-      try {
-        const { createClient } = await import('@/lib/supabase/client')
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          router.push('/dashboard')
-        }
-      } catch {
-      } finally {
-        setCheckingAuth(false)
-      }
-    }
-    checkSession()
-  }, [router])
 
   function getErrorMessage(err: any): string {
     const message = err?.message || ''
@@ -60,8 +40,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
       toast.success('Welcome back!')
-      router.push('/dashboard')
-      router.refresh()
+      window.location.href = '/dashboard'
     } catch (err: any) {
       toast.error(getErrorMessage(err))
     } finally {
@@ -89,14 +68,6 @@ export default function LoginPage() {
     } finally {
       setMagicLinkLoading(false)
     }
-  }
-
-  if (checkingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
-        <Loader2 className="h-6 w-6 animate-spin text-[#9A9A9A]" />
-      </div>
-    )
   }
 
   return (

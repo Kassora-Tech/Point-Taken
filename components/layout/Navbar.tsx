@@ -56,7 +56,12 @@ export default function Navbar() {
               )
             })}
             <Link href="/auth/login">
-              <Button className="bg-[#C0152A] hover:bg-[#E8354A] text-white rounded-full px-6 font-semibold">
+              <Button
+                className="text-white rounded-full px-6 font-semibold transition-all duration-300"
+                style={{ background: 'linear-gradient(135deg, #E8354A 0%, #C0152A 60%, #8B0D1C 100%)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #E8354A 0%, #C0152A 40%, #8B0D1C 100%)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(192,21,42,0.4)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #E8354A 0%, #C0152A 60%, #8B0D1C 100%)'; e.currentTarget.style.boxShadow = 'none' }}
+              >
                 Client Portal
               </Button>
             </Link>
@@ -97,7 +102,10 @@ export default function Navbar() {
                   )
                 })}
                 <Link href="/auth/login" onClick={() => setIsOpen(false)} className="mt-4">
-                  <Button className="w-full bg-[#C0152A] hover:bg-[#E8354A] text-white font-semibold rounded-full">
+                  <Button
+                    className="w-full text-white font-semibold rounded-full transition-all duration-300"
+                    style={{ background: 'linear-gradient(135deg, #E8354A 0%, #C0152A 60%, #8B0D1C 100%)' }}
+                  >
                     Client Portal
                   </Button>
                 </Link>
