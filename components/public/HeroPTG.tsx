@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
+
 import { Shield, Star, Leaf } from 'lucide-react'
 
 const metrics = [
@@ -57,7 +57,7 @@ export default function HeroPTG() {
 
   return (
     <section
-      className="relative min-h-screen overflow-hidden"
+      className="relative min-h-[90vh] lg:min-h-[90vh] overflow-hidden"
       style={{
         background:
           'radial-gradient(ellipse 60% 80% at 0% 50%, rgba(192,21,42,0.12) 0%, transparent 60%),' +
@@ -68,10 +68,10 @@ export default function HeroPTG() {
       {/* Grid overlay */}
       <div className="absolute inset-0 bg-grid-pattern" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* LEFT COLUMN */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* Badge + Status Pills */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -95,7 +95,7 @@ export default function HeroPTG() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="font-display text-5xl lg:text-7xl xl:text-8xl font-black leading-[1.05] text-white"
+              className="font-display font-black leading-[1.05] text-white" style={{ fontSize: 'clamp(2.5rem, 6vw, 5.5rem)' }}
             >
               Your partner in{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C0152A] to-[#E8354A]">
@@ -110,7 +110,7 @@ export default function HeroPTG() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg text-white/60 max-w-xl"
+              className="text-base sm:text-lg text-white/60 max-w-xl"
             >
               Point-Taken Group delivers top-tier products and services across South Africa,
               with dedicated teams, transparent communication, and an unwavering commitment to quality.
@@ -121,7 +121,7 @@ export default function HeroPTG() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex gap-8"
+              className="flex gap-6"
             >
               {metrics.map((m) => (
                 <div key={m.label}>
@@ -226,21 +226,17 @@ export default function HeroPTG() {
                 ))}
               </div>
 
-              {/* Showcase Image */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                className="absolute -bottom-4 -right-4 w-40 h-40 rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_40px_rgba(192,21,42,0.2)]"
-              >
-                <Image
-                  src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80"
-                  alt="Logistics"
-                  fill
-                  className="object-cover"
-                  preload
+              {/* Center pulsing glow — replaces removed showcase image */}
+              <div className="absolute -bottom-4 -right-4 w-48 h-48">
+                <motion.div
+                  animate={{ opacity: [0.4, 0.8, 0.4] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_center,rgba(192,21,42,0.15),transparent_60%)]"
                 />
-              </motion.div>
+                <div className="absolute inset-[15%] rounded-xl bg-[#111111] border border-white/10 flex items-center justify-center">
+                  <span className="font-display text-lg font-bold text-[#C0152A]">PTG</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

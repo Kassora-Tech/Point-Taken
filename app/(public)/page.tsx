@@ -32,9 +32,10 @@ const marqueeText = 'Excellence · Innovation · Integrity · Sustainability · 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 20, scale: 0.8 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
       className="text-center"
     >
       <div className="font-display font-black text-4xl text-white">{value}</div>
@@ -68,17 +69,32 @@ export default function HomePage() {
       <HeroPTG />
 
       {/* Stats Bar */}
-      <section className="bg-[#C0152A] py-8">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-5 gap-8 text-white">
+      <section
+        className="py-8 relative overflow-hidden"
+        style={{
+          background:
+            'radial-gradient(ellipse 80% 100% at 20% 0%, rgba(232,53,74,0.4) 0%, transparent 60%),' +
+            'radial-gradient(ellipse 80% 100% at 80% 100%, rgba(139,13,28,0.5) 0%, transparent 60%),' +
+            'linear-gradient(135deg, #8B0D1C 0%, #C0152A 50%, #6B0915 100%)',
+        }}
+      >
+        {/* Noise texture overlay */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-conic-gradient(#fff 0.000001%, transparent 0.0001%, transparent 50%, #fff 50.000001%, transparent 50.0002%, transparent 99.9999%)', backgroundSize: '4px 4px' }} />
+        {/* Top border */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-white/10" />
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-5 gap-8 text-white relative z-10">
           {stats.map((stat) => (
             <Stat key={stat.label} value={stat.value} label={stat.label} />
           ))}
         </div>
       </section>
 
+      {/* Section transition fade */}
+      <div className="h-10 bg-gradient-to-b from-[#8B0D1C] to-[#0A0A0A]" />
+
       {/* Services Grid */}
       <section
-        className="py-24"
+        className="py-20"
         style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #111111 50%, #0A0A0A 100%)' }}
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -215,17 +231,37 @@ export default function HomePage() {
       </section>
 
       {/* CTA Banner */}
-      <section className="bg-[#C0152A] py-20 text-center text-white">
-        <p className="text-sm uppercase tracking-widest text-white/70 mb-4">Ready to work together?</p>
-        <h2 className="font-display font-black text-5xl sm:text-6xl mb-8">Let's take the point.</h2>
-        <div className="flex gap-4 justify-center flex-wrap">
+      <section
+        className="py-20 text-center text-white relative overflow-hidden"
+        style={{
+          background:
+            'radial-gradient(ellipse 60% 80% at 100% 0%, rgba(232,53,74,0.35) 0%, transparent 55%),' +
+            'radial-gradient(ellipse 70% 90% at 0% 100%, rgba(107,9,21,0.6) 0%, transparent 60%),' +
+            'linear-gradient(160deg, #6B0915 0%, #8B0D1C 40%, #C0152A 100%)',
+        }}
+      >
+        {/* Noise texture */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-conic-gradient(#fff 0.000001%, transparent 0.0001%, transparent 50%, #fff 50.000001%, transparent 50.0002%, transparent 99.9999%)', backgroundSize: '4px 4px' }} />
+        <p className="text-sm uppercase tracking-widest text-white/70 mb-4 relative z-10">Ready to work together?</p>
+        <h2 className="font-display font-black text-5xl sm:text-6xl mb-8 relative z-10">Let's take the point.</h2>
+        <div className="flex gap-4 justify-center flex-wrap relative z-10">
           <Link href="/contact">
-            <Button className="bg-white text-[#C0152A] hover:bg-white/90 rounded-full px-8 py-6 text-lg font-semibold">
+            <Button
+              className="bg-white text-[#8B0D1C] rounded-full px-8 py-6 text-lg font-semibold transition-all duration-300"
+              style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.25)', border: '1px solid rgba(0,0,0,0.05)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.3)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.25)' }}
+            >
               Contact Us
             </Button>
           </Link>
           <Link href="/store">
-            <Button className="border-2 border-white text-white hover:bg-white/10 rounded-full px-8 py-6 text-lg font-semibold">
+            <Button
+              className="rounded-full px-8 py-6 text-lg font-semibold transition-all duration-300"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1.5px solid rgba(255,255,255,0.5)', color: '#FFFFFF', backdropFilter: 'blur(8px)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.borderColor = '#FFFFFF' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)' }}
+            >
               View Our Store
             </Button>
           </Link>

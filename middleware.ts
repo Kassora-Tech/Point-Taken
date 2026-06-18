@@ -9,7 +9,9 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() { return request.cookies.getAll() },
+        getAll() {
+          return request.cookies.getAll()
+        },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
@@ -23,13 +25,28 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (request.nextUrl.pathname.startsWith('/dashboard') && !user) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
+  const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard')
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth')
+
+  // Protect dashboard routes - redirect unauthenticated users to login
+  if (isDashboardRoute && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/login'
+    return NextResponse.redirect(url)
+  }
+
+  // Redirect authenticated users away from auth pages (except callback)
+  if (isAuthRoute && user && !request.nextUrl.pathname.startsWith('/auth/callback')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
   }
 
   return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/auth/:path*'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }

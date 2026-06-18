@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,7 +14,6 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -41,8 +39,7 @@ export default function SignupPage() {
       if (profileError) throw profileError
 
       toast.success('Account created successfully!')
-      router.push('/dashboard')
-      router.refresh()
+      window.location.href = '/dashboard'
     } catch (err: any) {
       toast.error(err.message || 'Signup failed')
     } finally {
