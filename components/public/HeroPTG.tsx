@@ -226,17 +226,6 @@ export default function HeroPTG() {
                 ))}
               </div>
 
-              {/* Center pulsing glow — replaces removed showcase image */}
-              <div className="absolute -bottom-4 -right-4 w-48 h-48">
-                <motion.div
-                  animate={{ opacity: [0.4, 0.8, 0.4] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_center,rgba(192,21,42,0.15),transparent_60%)]"
-                />
-                <div className="absolute inset-[15%] rounded-xl bg-[#111111] border border-white/10 flex items-center justify-center">
-                  <span className="font-display text-lg font-bold text-[#C0152A]">PTG</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
