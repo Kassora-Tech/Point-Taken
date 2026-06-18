@@ -25,8 +25,12 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard')
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth')
+  const pathname = request.nextUrl.pathname
+
+  // All dashboard-protected routes (route group (dashboard) is invisible in URLs)
+  const dashboardPaths = ['/dashboard', '/blog-admin', '/calendar', '/directory-admin', '/documents', '/reports', '/social', '/store-admin', '/tracking']
+  const isDashboardRoute = dashboardPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
+  const isAuthRoute = pathname.startsWith('/auth')
 
   // Protect dashboard routes - redirect unauthenticated users to login
   if (isDashboardRoute && !user) {
@@ -36,7 +40,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Redirect authenticated users away from auth pages (except callback)
-  if (isAuthRoute && user && !request.nextUrl.pathname.startsWith('/auth/callback')) {
+  if (isAuthRoute && user && !pathname.startsWith('/auth/callback')) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
