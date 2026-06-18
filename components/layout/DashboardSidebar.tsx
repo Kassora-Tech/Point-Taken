@@ -21,14 +21,14 @@ import { cn } from '@/lib/utils'
 
 const sidebarLinks = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-  { href: '/dashboard/blog-admin', label: 'Blog Manager', icon: FileText },
-  { href: '/dashboard/calendar', label: 'Calendar', icon: Calendar },
-  { href: '/dashboard/directory-admin', label: 'Directory', icon: Bookmark },
-  { href: '/dashboard/documents', label: 'Documents', icon: FolderOpen },
-  { href: '/dashboard/store-admin', label: 'Store Manager', icon: ShoppingCart },
-  { href: '/dashboard/social', label: 'Social Media', icon: Share2 },
-  { href: '/dashboard/tracking', label: 'Order Tracking', icon: Truck },
-  { href: '/dashboard/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/blog-admin', label: 'Blog Manager', icon: FileText },
+  { href: '/calendar', label: 'Calendar', icon: Calendar },
+  { href: '/directory-admin', label: 'Directory', icon: Bookmark },
+  { href: '/documents', label: 'Documents', icon: FolderOpen },
+  { href: '/store-admin', label: 'Store Manager', icon: ShoppingCart },
+  { href: '/social', label: 'Social Media', icon: Share2 },
+  { href: '/tracking', label: 'Order Tracking', icon: Truck },
+  { href: '/reports', label: 'Reports', icon: BarChart3 },
 ]
 
 export default function DashboardSidebar() {
