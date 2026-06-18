@@ -1,17 +1,47 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Package, Truck, Heart, Building2, Lightbulb, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import HeroPTG from '@/components/public/HeroPTG'
-import StatsBar from '@/components/public/StatsBar'
-import ServicesGrid from '@/components/public/ServicesGrid'
 import BlogCard from '@/components/public/BlogCard'
 import ContactSection from '@/components/public/ContactSection'
-import { createClient } from '@/lib/supabase/client'
 import type { BlogPost } from '@/lib/types'
+
+const stats = [
+  { value: '2021', label: 'Established' },
+  { value: '4', label: 'Cities' },
+  { value: '96%', label: 'Satisfaction' },
+  { value: 'LOGIS', label: 'Certified' },
+  { value: 'SAHPRA', label: 'Registered' },
+]
+
+const services = [
+  { icon: Package, title: 'Supply & Procurement', description: 'Sourcing top-tier products across all categories with speed and reliability.' },
+  { icon: Truck, title: 'Nationwide Delivery', description: 'Comprehensive logistics network ensuring timely delivery to all major cities.' },
+  { icon: Heart, title: 'Healthcare Supplies', description: 'SAHPRA-registered medical product distribution for healthcare facilities.' },
+  { icon: Building2, title: 'Government Contracts', description: 'LOGIS-certified supplier for public sector procurement needs.' },
+  { icon: Lightbulb, title: 'Consultation Services', description: 'Strategic supply chain consulting tailored to your business requirements.' },
+  { icon: Users, title: 'Account Management', description: 'Dedicated account teams providing proactive communication and support.' },
+]
+
+const marqueeText = 'Excellence · Innovation · Integrity · Sustainability · Point-Taken Group ·'
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="text-center"
+    >
+      <div className="font-display font-black text-4xl text-white">{value}</div>
+      <div className="text-sm uppercase tracking-widest text-white/70">{label}</div>
+    </motion.div>
+  )
+}
 
 export default function HomePage() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
@@ -19,6 +49,7 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchPosts() {
       try {
+        const { createClient } = await import('@/lib/supabase/client')
         const supabase = createClient()
         const { data } = await supabase
           .from('blog_posts')
@@ -35,53 +66,100 @@ export default function HomePage() {
   return (
     <>
       <HeroPTG />
-      <StatsBar />
-      <ServicesGrid />
 
+      {/* Stats Bar */}
+      <section className="bg-[#C0152A] py-8">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-5 gap-8 text-white">
+          {stats.map((stat) => (
+            <Stat key={stat.label} value={stat.value} label={stat.label} />
+          ))}
+        </div>
+      </section>
+
+      {/* Services Grid */}
+      <section
+        className="py-24"
+        style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #111111 50%, #0A0A0A 100%)' }}
+      >
+        <div className="max-w-7xl mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="font-display font-black text-5xl sm:text-6xl text-[#F5F5F5]">What We Deliver</h2>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {services.map((service, i) => {
+              const Icon = service.icon
+              return (
+                <motion.div
+                  key={service.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="bg-[#111111] border-l-4 border-l-[#C0152A] border border-white/8 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(192,21,42,0.15)] transition-all duration-300"
+                >
+                  <Icon className="h-8 w-8 text-[#C0152A] mb-4" />
+                  <h3 className="font-display font-bold text-lg text-[#F5F5F5] mb-2">{service.title}</h3>
+                  <p className="text-sm text-[#9A9A9A]">{service.description}</p>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Marquee Band */}
       <section className="py-16 bg-[#0A0A0A] overflow-hidden border-t border-white/5">
         <div className="animate-marquee whitespace-nowrap">
-          <span className="font-display text-[100px] font-black text-[#C0152A]/20 leading-none mx-4">
-            Excellence · Innovation · Integrity · Sustainability · Point-Taken Group ·{' '}
+          <span className="font-display font-black text-[100px] sm:text-[120px] text-[#C0152A]/30 leading-none mx-4">
+            {marqueeText}
           </span>
-          <span className="font-display text-[100px] font-black text-[#C0152A]/20 leading-none mx-4">
-            Excellence · Innovation · Integrity · Sustainability · Point-Taken Group ·{' '}
+          <span className="font-display font-black text-[100px] sm:text-[120px] text-[#C0152A]/30 leading-none mx-4">
+            {marqueeText}
           </span>
         </div>
       </section>
 
-      <section className="py-24 bg-[#1A1A1A] bg-grid-pattern">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12">
+      {/* Vision & Mission */}
+      <section className="relative overflow-hidden bg-[#111111]">
+        <div className="max-w-7xl mx-auto px-4 py-24">
+          <div className="grid md:grid-cols-2 gap-0 relative">
+            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-[#C0152A]/20 rotate-12 origin-center" />
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="p-8 rounded-2xl border border-white/5"
+              className="p-8 md:pr-16"
             >
               <span className="text-[#C0152A] text-sm font-semibold tracking-widest font-display uppercase">Our Vision</span>
-              <h2 className="font-display text-3xl font-bold text-[#F5F5F5] mt-4 mb-4">Vision</h2>
+              <h2 className="font-display text-4xl font-bold text-[#F5F5F5] mt-4 mb-6">Vision</h2>
               <p className="text-[#9A9A9A] text-lg leading-relaxed">
-                To be the premier provider of supply and service solutions, consistently exceeding customer expectations.
+                To be the premier provider of supply and service solutions, consistently exceeding customer expectations through innovation, integrity, and unwavering commitment to quality.
               </p>
             </motion.div>
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="p-8 rounded-2xl border border-white/5"
+              className="p-8 md:pl-16"
             >
               <span className="text-[#C0152A] text-sm font-semibold tracking-widest font-display uppercase">Our Mission</span>
-              <h2 className="font-display text-3xl font-bold text-[#F5F5F5] mt-4 mb-4">Mission</h2>
+              <h2 className="font-display text-4xl font-bold text-[#F5F5F5] mt-4 mb-6">Mission</h2>
               <p className="text-[#9A9A9A] text-lg leading-relaxed">
-                To deliver reliable and top-quality products and services while fostering sustainability, innovation, and lasting partnerships.
+                To deliver reliable and top-quality products and services while fostering sustainability, innovation, and lasting partnerships that drive mutual growth.
               </p>
             </motion.div>
           </div>
         </div>
       </section>
 
-      <section className="py-24 bg-[#0A0A0A]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Blog Preview */}
+      <section className="py-24 bg-[#0A0A0A] bg-dot-pattern">
+        <div className="max-w-7xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -89,57 +167,68 @@ export default function HomePage() {
             className="flex items-end justify-between mb-12"
           >
             <div>
-              <span className="text-[#C0152A] text-sm font-semibold tracking-widest font-display uppercase">From Our Blog</span>
-              <h2 className="font-display text-4xl sm:text-5xl font-black text-[#F5F5F5] mt-4">Latest Insights</h2>
+              <p className="text-[#C0152A] text-sm tracking-widest font-semibold font-display uppercase">FROM OUR BLOG</p>
+              <h2 className="font-display font-black text-5xl sm:text-6xl text-[#F5F5F5] mt-4">Latest Insights</h2>
             </div>
             <Link href="/blog">
-              <Button variant="outline" className="border-[#C0152A] text-[#C0152A] hover:bg-[#C0152A]/10">
+              <Button variant="outline" className="border-[#C0152A] text-[#C0152A] hover:bg-[#C0152A]/10 rounded-full">
                 View All Posts <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <AnimatePresence mode="wait">
             {blogPosts.length > 0 ? (
-              blogPosts.map((post) => <BlogCard key={post.id} post={post} />)
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {blogPosts.map((post) => (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <BlogCard post={post} />
+                  </motion.div>
+                ))}
+              </div>
             ) : (
-              Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="bg-[#1A1A1A] rounded-2xl border border-white/5 p-5 h-80 animate-pulse">
-                  <div className="h-48 bg-[#2A2A2A] rounded-xl mb-4" />
-                  <div className="h-4 bg-[#2A2A2A] rounded w-3/4 mb-2" />
-                  <div className="h-3 bg-[#2A2A2A] rounded w-1/2" />
-                </div>
-              ))
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="bg-[#111111] rounded-2xl border border-white/8 p-5 h-80 animate-pulse">
+                      <div className="h-48 bg-[#1A1A1A] rounded-xl mb-4" />
+                      <div className="h-4 bg-[#1A1A1A] rounded w-3/4 mb-2" />
+                      <div className="h-3 bg-[#1A1A1A] rounded w-1/2" />
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             )}
-          </div>
+          </AnimatePresence>
         </div>
       </section>
 
-      <section className="relative py-32 overflow-hidden bg-[#0A0A0A] border-t border-white/5">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-96 h-96 bg-[#C0152A]/20 rounded-full blur-[120px] animate-pulse" />
-        </div>
-        <div className="relative max-w-4xl mx-auto text-center px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="font-display text-5xl sm:text-7xl font-black text-[#F5F5F5] mb-8">
-              Ready to take the point?
-            </h2>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/contact">
-                <Button variant="outline" className="border-[#C0152A] text-[#C0152A] hover:bg-[#C0152A]/10 px-8 py-6 text-lg">
-                  Contact Us
-                </Button>
-              </Link>
-              <Link href="/store">
-                <Button className="bg-[#C0152A] hover:bg-[#E8354A] text-white px-8 py-6 text-lg font-semibold">
-                  View Our Store
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
+      {/* CTA Banner */}
+      <section className="bg-[#C0152A] py-20 text-center text-white">
+        <p className="text-sm uppercase tracking-widest text-white/70 mb-4">Ready to work together?</p>
+        <h2 className="font-display font-black text-5xl sm:text-6xl mb-8">Let's take the point.</h2>
+        <div className="flex gap-4 justify-center flex-wrap">
+          <Link href="/contact">
+            <Button className="bg-white text-[#C0152A] hover:bg-white/90 rounded-full px-8 py-6 text-lg font-semibold">
+              Contact Us
+            </Button>
+          </Link>
+          <Link href="/store">
+            <Button className="border-2 border-white text-white hover:bg-white/10 rounded-full px-8 py-6 text-lg font-semibold">
+              View Our Store
+            </Button>
+          </Link>
         </div>
       </section>
 
