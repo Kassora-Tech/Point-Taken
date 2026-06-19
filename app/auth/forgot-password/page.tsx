@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { Loader2, Mail } from 'lucide-react'
+import Link from 'next/link'
+import { Loader2, Mail, ArrowLeft } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -35,8 +36,13 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A] px-4">
+      <Link href="/" className="absolute top-6 left-6 flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors z-10">
+        <ArrowLeft className="w-4 h-4" />
+        Back to home
+      </Link>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
+          <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
           <Image
             src="https://i.ibb.co/vCYDLZLf/Invoicelogo-Pnt-Takn-Grp-Logo-jpg.jpg"
             alt="Point-Taken Group"
@@ -45,6 +51,7 @@ export default function ForgotPasswordPage() {
             className="mx-auto rounded-xl mb-4"
             preload
           />
+          </Link>
           <h1 className="font-display text-3xl font-bold text-[#F5F5F5]">Reset Password</h1>
           <p className="text-[#9A9A9A] mt-2">Enter your email to receive a reset link</p>
         </div>

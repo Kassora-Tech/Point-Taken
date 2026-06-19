@@ -1,0 +1,184 @@
+/* === FullCalendar Dark Theme for Point-Taken Group === */
+
+.fc {
+  --fc-border-color: rgba(255,255,255,0.08);
+  --fc-page-bg-color: #0A0A0A;
+  --fc-neutral-bg-color: #111111;
+  --fc-list-event-hover-bg-color: rgba(192,21,42,0.1);
+  font-family: var(--font-body);
+  background: #0A0A0A;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.fc-theme-standard td, .fc-theme-standard th {
+  border-color: rgba(255,255,255,0.06);
+}
+
+.fc-col-header-cell {
+  background: #111111;
+  padding: 12px 0;
+}
+
+.fc-col-header-cell-cushion {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+}
+
+.fc-daygrid-day {
+  background: #0D0D0D;
+  transition: background 0.2s ease;
+}
+
+.fc-daygrid-day:hover {
+  background: #131313;
+}
+
+.fc-daygrid-day-number {
+  color: rgba(255,255,255,0.7);
+  font-weight: 500;
+  padding: 8px;
+  text-decoration: none;
+}
+
+.fc-day-today {
+  background: rgba(192,21,42,0.08) !important;
+}
+
+.fc-day-today .fc-daygrid-day-number {
+  color: #E8354A;
+  font-weight: 700;
+}
+
+.fc-day-today .fc-daygrid-day-number::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #E8354A;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.fc-event {
+  border: none !important;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  margin: 2px 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+  white-space: normal;
+  overflow: visible;
+}
+
+.fc-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
+
+.fc-daygrid-event-dot {
+  display: none;
+}
+
+.fc-event-title {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-event-time {
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.fc-event.event-type-event {
+  background: rgba(192,21,42,0.18) !important;
+  color: #F87171 !important;
+  border-left: 3px solid #C0152A !important;
+}
+
+.fc-event.event-type-meeting {
+  background: rgba(245,158,11,0.18) !important;
+  color: #FCD34D !important;
+  border-left: 3px solid #F59E0B !important;
+}
+
+.fc-event.event-type-delivery {
+  background: rgba(59,130,246,0.18) !important;
+  color: #93C5FD !important;
+  border-left: 3px solid #3B82F6 !important;
+}
+
+.fc-event.event-type-deadline {
+  background: rgba(239,68,68,0.22) !important;
+  color: #FCA5A5 !important;
+  border-left: 3px solid #EF4444 !important;
+}
+
+.fc-toolbar {
+  margin-bottom: 24px !important;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.fc-toolbar-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.75rem !important;
+  color: #F5F5F5;
+}
+
+.fc-button {
+  background: #1A1A1A !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  color: rgba(255,255,255,0.7) !important;
+  border-radius: 8px !important;
+  padding: 6px 14px !important;
+  font-weight: 500 !important;
+  text-transform: capitalize !important;
+  box-shadow: none !important;
+  transition: all 0.15s ease;
+}
+
+.fc-button:hover {
+  background: #232323 !important;
+  border-color: rgba(255,255,255,0.2) !important;
+  color: #fff !important;
+}
+
+.fc-button-active, .fc-button-primary:not(:disabled).fc-button-active {
+  background: #C0152A !important;
+  border-color: #C0152A !important;
+  color: #fff !important;
+}
+
+.fc-today-button {
+  text-transform: capitalize !important;
+}
+
+.fc-prev-button, .fc-next-button {
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+.fc-popover {
+  background: #1A1A1A !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5) !important;
+}
+
+.fc-popover-header {
+  background: #111111 !important;
+  color: #fff !important;
+  padding: 10px 14px !important;
+}

@@ -10,17 +10,17 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
-import { Search, Truck, Package, CheckCircle, Clock, XCircle, Eye } from 'lucide-react'
+import { Search, Truck, Package, CheckCircle, Clock, XCircle, Eye, X } from 'lucide-react'
 import type { Order } from '@/lib/types'
 
 const statusFlow = ['pending', 'confirmed', 'processing', 'shipped', 'delivered']
-const statusConfig: Record<string, { label: string; icon: any; color: string }> = {
-  pending: { label: 'Pending', icon: Clock, color: 'text-yellow-500' },
-  confirmed: { label: 'Confirmed', icon: Package, color: 'text-blue-500' },
-  processing: { label: 'Processing', icon: Truck, color: 'text-orange-500' },
-  shipped: { label: 'Shipped', icon: Truck, color: 'text-blue-400' },
-  delivered: { label: 'Delivered', icon: CheckCircle, color: 'text-green-500' },
-  cancelled: { label: 'Cancelled', icon: XCircle, color: 'text-red-500' },
+const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
+  pending:    { bg: '#F59E0B', text: '#FCD34D', label: 'Pending' },
+  confirmed:  { bg: '#3B82F6', text: '#93C5FD', label: 'Confirmed' },
+  processing: { bg: '#A855F7', text: '#D8B4FE', label: 'Processing' },
+  shipped:    { bg: '#F97316', text: '#FDBA74', label: 'Shipped' },
+  delivered:  { bg: '#22C55E', text: '#86EFAC', label: 'Delivered' },
+  cancelled:  { bg: '#EF4444', text: '#FCA5A5', label: 'Cancelled' },
 }
 
 export default function TrackingPage() {
@@ -74,7 +74,7 @@ export default function TrackingPage() {
           </SelectTrigger>
           <SelectContent className="bg-[#1A1A1A] border-white/10 text-[#F5F5F5]">
             <SelectItem value="all">All Statuses</SelectItem>
-            {Object.entries(statusConfig).map(([key, val]) => (
+            {Object.entries(STATUS_COLORS).map(([key, val]) => (
               <SelectItem key={key} value={key}>{val.label}</SelectItem>
             ))}
           </SelectContent>
@@ -90,8 +90,6 @@ export default function TrackingPage() {
           ) : (
             <div className="divide-y divide-white/5">
               {filtered.map((order) => {
-                const config = statusConfig[order.status]
-                const StatusIcon = config?.icon
                 return (
                   <div key={order.id} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer" onClick={() => openDetail(order)}>
                     <div className="flex-1 min-w-0">
@@ -99,9 +97,8 @@ export default function TrackingPage() {
                       <p className="text-xs text-[#9A9A9A]">{order.customer_name} • {order.customer_email}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className={`flex items-center gap-1 text-sm font-semibold ${config?.color}`}>
-                        {StatusIcon && <StatusIcon className="h-4 w-4" />}
-                        {config?.label}
+                      <span className="flex items-center gap-1 text-sm font-semibold" style={{ color: STATUS_COLORS[order.status]?.text || '#F5F5F5' }}>
+                        {STATUS_COLORS[order.status]?.label || order.status}
                       </span>
                       <span className="font-display font-bold text-[#F5F5F5]">R {Number(order.total).toFixed(2)}</span>
                       <Button variant="ghost" size="icon" className="text-[#9A9A9A]"><Eye className="h-4 w-4" /></Button>
@@ -115,56 +112,93 @@ export default function TrackingPage() {
       </Card>
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="bg-[#1A1A1A] border-white/10 text-[#F5F5F5] max-w-lg">
-          <DialogTitle className="font-display text-xl font-bold">Order Details</DialogTitle>
+        <DialogContent className="bg-[#1A1A1A] border-white/10 text-[#F5F5F5] max-w-xl max-h-[85vh] overflow-y-auto">
           {selectedOrder && (
-            <div className="space-y-4">
-              <div className="flex justify-between">
+            <div className="p-6 space-y-6">
+              {/* Header row */}
+              <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[#9A9A9A] text-xs">Order Number</p>
-                  <p className="font-display font-bold text-[#F5F5F5]">{selectedOrder.order_number}</p>
+                  <DialogTitle className="font-display text-xl font-bold text-[#F5F5F5]">{selectedOrder.order_number}</DialogTitle>
+                  <p className="text-sm text-[#9A9A9A] mt-1">Placed {formatDate(selectedOrder.created_at)}</p>
                 </div>
+                <button onClick={() => setDetailOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-[#9A9A9A] hover:text-[#F5F5F5]">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Status full-width pill select */}
+              <div>
+                <p className="text-xs uppercase tracking-wider text-white/40 mb-2">Status</p>
                 <Select value={selectedOrder.status} onValueChange={(v) => { if (v) { updateStatus(selectedOrder, v); setDetailOpen(false) } }}>
-                  <SelectTrigger className={`w-36 border-white/10 ${statusConfig[selectedOrder.status]?.color}`}>
+                  <SelectTrigger
+                    className="w-full h-12 text-base font-semibold border-white/10 rounded-xl"
+                    style={{
+                      background: `${STATUS_COLORS[selectedOrder.status]?.bg}20` || 'rgba(255,255,255,0.05)',
+                      color: STATUS_COLORS[selectedOrder.status]?.text || '#F5F5F5',
+                      borderLeft: `4px solid ${STATUS_COLORS[selectedOrder.status]?.bg || '#9A9A9A'}`,
+                    }}
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1A1A1A] border-white/10">
                     {[...statusFlow, 'cancelled'].map((s) => (
-                      <SelectItem key={s} value={s} className="text-[#F5F5F5]">{statusConfig[s]?.label}</SelectItem>
+                      <SelectItem key={s} value={s} className="text-[#F5F5F5] font-medium">
+                        <span className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full" style={{ background: STATUS_COLORS[s]?.bg }} />
+                          {STATUS_COLORS[s]?.label || s}
+                        </span>
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><p className="text-[#9A9A9A] text-xs">Customer</p><p className="text-[#F5F5F5]">{selectedOrder.customer_name}</p></div>
-                <div><p className="text-[#9A9A9A] text-xs">Email</p><p className="text-[#F5F5F5]">{selectedOrder.customer_email}</p></div>
-                <div><p className="text-[#9A9A9A] text-xs">Phone</p><p className="text-[#F5F5F5]">{selectedOrder.customer_phone || 'N/A'}</p></div>
-                <div><p className="text-[#9A9A9A] text-xs">Date</p><p className="text-[#F5F5F5]">{formatDate(selectedOrder.created_at)}</p></div>
-              </div>
-              {selectedOrder.tracking_number && (
-                <div><p className="text-[#9A9A9A] text-xs">Tracking #</p><p className="font-mono text-[#F5F5F5]">{selectedOrder.tracking_number}</p></div>
-              )}
-              {selectedOrder.delivery_address && (
-                <div><p className="text-[#9A9A9A] text-xs">Delivery Address</p><p className="text-[#F5F5F5]">{selectedOrder.delivery_address}</p></div>
-              )}
+
+              {/* Customer */}
               <div>
-                <p className="text-[#9A9A9A] text-xs mb-2">Items</p>
-                <div className="bg-[#0A0A0A] rounded-lg p-3 space-y-2">
+                <p className="text-xs uppercase tracking-wider text-white/40 mb-2">Customer</p>
+                <p className="text-[#F5F5F5] font-medium">{selectedOrder.customer_name}</p>
+                <p className="text-sm text-[#9A9A9A]">{selectedOrder.customer_email} · {selectedOrder.customer_phone || 'N/A'}</p>
+              </div>
+
+              {/* Delivery */}
+              {selectedOrder.delivery_address && (
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-white/40 mb-2">Delivery</p>
+                  <p className="text-[#F5F5F5]">{selectedOrder.delivery_address}</p>
+                  {selectedOrder.tracking_number && (
+                    <p className="text-sm text-[#9A9A9A] mt-1">Tracking: <span className="font-mono text-[#F5F5F5]">{selectedOrder.tracking_number}</span></p>
+                  )}
+                </div>
+              )}
+
+              {/* Items */}
+              <div>
+                <p className="text-xs uppercase tracking-wider text-white/40 mb-2">Items</p>
+                <div className="bg-[#0A0A0A] rounded-xl divide-y divide-white/5 overflow-hidden">
                   {(selectedOrder.items as any[])?.map((item: any, i: number) => (
-                    <div key={i} className="flex justify-between text-sm">
-                      <span className="text-[#F5F5F5]">{item.name} x{item.quantity}</span>
-                      <span className="text-[#C0152A]">R {Number(item.price).toFixed(2)}</span>
+                    <div key={i} className="flex items-center justify-between py-3 px-4">
+                      <span className="text-[#F5F5F5] text-sm font-medium">{item.name} <span className="text-[#9A9A9A] font-normal">x{item.quantity}</span></span>
+                      <span className="text-[#C0152A] font-semibold text-sm">R {Number(item.price).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}</span>
                     </div>
                   ))}
                 </div>
               </div>
-              {selectedOrder.notes && (
-                <div><p className="text-[#9A9A9A] text-xs">Notes</p><p className="text-[#F5F5F5] text-sm">{selectedOrder.notes}</p></div>
-              )}
-              <div className="text-right">
-                <p className="text-[#9A9A9A] text-xs">Total</p>
-                <p className="font-display text-2xl font-bold text-[#C0152A]">R {Number(selectedOrder.total).toFixed(2)}</p>
+
+              {/* Total */}
+              <div className="border-t border-white/10 pt-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[#9A9A9A] text-sm">Total</span>
+                  <span className="font-display text-2xl font-bold text-[#C0152A]">R {Number(selectedOrder.total).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}</span>
+                </div>
               </div>
+
+              {/* Notes */}
+              {selectedOrder.notes && (
+                <div className="bg-[#0A0A0A] rounded-xl p-4">
+                  <p className="text-xs text-[#9A9A9A] mb-1">Notes</p>
+                  <p className="text-sm text-[#F5F5F5]">{selectedOrder.notes}</p>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
