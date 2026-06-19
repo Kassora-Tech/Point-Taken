@@ -193,14 +193,19 @@ export default function HeroPTG() {
               {/* Center glow */}
               <div className="absolute inset-[25%] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(192,21,42,0.25),transparent_70%)]" />
 
-              {/* Center PTG logo */}
-              <div className="absolute inset-[32%] rounded-full bg-[#111111] border border-white/10 flex items-center justify-center z-10 overflow-hidden">
+              {/* Center mark — logo fills the circle directly, no square wrapper */}
+              <div
+                className="absolute inset-[32%] rounded-full flex items-center justify-center z-10 overflow-hidden"
+                style={{
+                  background: 'radial-gradient(circle, rgba(192,21,42,0.15) 0%, transparent 70%)',
+                }}
+              >
                 <Image
                   src="https://i.ibb.co/vCYDLZLf/Invoicelogo-Pnt-Takn-Grp-Logo-jpg.jpg"
                   alt="Point-Taken Group"
-                  width={80}
-                  height={80}
-                  className="object-contain p-3"
+                  width={100}
+                  height={100}
+                  className="w-[82%] h-[82%] object-contain rounded-full"
                   preload
                 />
               </div>

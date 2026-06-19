@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDate } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Package, ShoppingCart, FileText, Eye } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 import type { Order, BlogPost, Product } from '@/lib/types'
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
@@ -130,7 +130,12 @@ export default function ReportsPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                   <XAxis dataKey="date" stroke="#9A9A9A" fontSize={12} />
                   <YAxis stroke="#9A9A9A" fontSize={12} />
-                  <Tooltip contentStyle={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#F5F5F5' }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '10px 14px', boxShadow: '0 12px 32px rgba(0,0,0,0.5)' }}
+                    labelStyle={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', marginBottom: '4px' }}
+                    itemStyle={{ color: '#F5F5F5', fontWeight: 600 }}
+                    cursor={{ fill: 'rgba(192,21,42,0.08)' }}
+                  />
                   <Line type="monotone" dataKey="count" stroke="#C0152A" strokeWidth={2} dot={{ fill: '#C0152A' }} />
                 </LineChart>
               </ResponsiveContainer>
@@ -142,23 +147,39 @@ export default function ReportsPage() {
           <CardHeader><CardTitle className="font-display text-lg text-[#F5F5F5]">Orders by Status</CardTitle></CardHeader>
           <CardContent>
             {statusChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie data={statusChartData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
-                    {statusChartData.map((entry, i) => {
-                      const color = STATUS_COLORS[entry.name]?.bg || '#9A9A9A'
-                      return <Cell key={i} fill={color} />
-                    })}
-                  </Pie>
-                  <Legend
-                    formatter={(value: string) => {
-                      const config = STATUS_COLORS[value]
-                      return <span style={{ color: config?.text || '#9A9A9A' }}>{config?.label || value}</span>
-                    }}
-                  />
-                  <Tooltip contentStyle={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#F5F5F5' }} />
-                </PieChart>
-              </ResponsiveContainer>
+              <>
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie
+                      data={statusChartData}
+                      innerRadius={60}
+                      outerRadius={85}
+                      paddingAngle={2}
+                      dataKey="value"
+                      nameKey="name"
+                    >
+                      {statusChartData.map((entry) => (
+                        <Cell key={entry.name} fill={STATUS_COLORS[entry.name]?.bg || '#9A9A9A'} stroke="none" />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px 12px' }}
+                      itemStyle={{ color: '#F5F5F5' }}
+                      formatter={(value: any, name: any) => [`${value} order${value !== 1 ? 's' : ''}`, STATUS_COLORS[name]?.label || name]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Clean legend below chart */}
+                <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mt-4">
+                  {statusChartData.map((entry) => (
+                    <div key={entry.name} className="flex items-center gap-2 text-sm">
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: STATUS_COLORS[entry.name]?.bg }} />
+                      <span style={{ color: STATUS_COLORS[entry.name]?.text }}>{STATUS_COLORS[entry.name]?.label}</span>
+                      <span className="text-white/40">({entry.value})</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : <p className="text-[#9A9A9A] text-sm">No data for this period.</p>}
           </CardContent>
         </Card>
@@ -172,7 +193,12 @@ export default function ReportsPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                   <XAxis dataKey="month" stroke="#9A9A9A" fontSize={12} />
                   <YAxis stroke="#9A9A9A" fontSize={12} />
-                  <Tooltip contentStyle={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5' }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '10px 14px', boxShadow: '0 12px 32px rgba(0,0,0,0.5)' }}
+                    labelStyle={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', marginBottom: '4px' }}
+                    itemStyle={{ color: '#F5F5F5', fontWeight: 600 }}
+                    cursor={{ fill: 'rgba(192,21,42,0.08)' }}
+                  />
                   <Bar dataKey="total" fill="#C0152A" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
