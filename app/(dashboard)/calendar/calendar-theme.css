@@ -125,9 +125,18 @@
 }
 
 .fc-toolbar {
-  margin-bottom: 24px !important;
-  flex-wrap: wrap;
-  gap: 12px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 16px !important;
+  padding: 4px 0 20px 0 !important;
+}
+
+.fc-toolbar-chunk {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
 }
 
 .fc-toolbar-title {
