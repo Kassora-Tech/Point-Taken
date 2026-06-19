@@ -29,21 +29,6 @@ const services = [
 
 const marqueeText = 'Excellence · Innovation · Integrity · Sustainability · Point-Taken Group ·'
 
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.8 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="text-center"
-    >
-      <div className="font-display font-black text-4xl text-white">{value}</div>
-      <div className="text-sm uppercase tracking-widest text-white/70">{label}</div>
-    </motion.div>
-  )
-}
-
 export default function HomePage() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
 
@@ -68,29 +53,40 @@ export default function HomePage() {
     <>
       <HeroPTG />
 
-      {/* Stats Bar */}
-      <section
-        className="py-8 relative overflow-hidden"
-        style={{
-          background:
-            'radial-gradient(ellipse 80% 100% at 20% 0%, rgba(232,53,74,0.4) 0%, transparent 60%),' +
-            'radial-gradient(ellipse 80% 100% at 80% 100%, rgba(139,13,28,0.5) 0%, transparent 60%),' +
-            'linear-gradient(135deg, #8B0D1C 0%, #C0152A 50%, #6B0915 100%)',
-        }}
-      >
-        {/* Noise texture overlay */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-conic-gradient(#fff 0.000001%, transparent 0.0001%, transparent 50%, #fff 50.000001%, transparent 50.0002%, transparent 99.9999%)', backgroundSize: '4px 4px' }} />
-        {/* Top border */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-white/10" />
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-5 gap-8 text-white relative z-10">
-          {stats.map((stat) => (
-            <Stat key={stat.label} value={stat.value} label={stat.label} />
-          ))}
+      {/* Stats Banner — Dark section with glowing stat cards */}
+      <section className="relative py-20 bg-[#0A0A0A] overflow-hidden">
+        {/* Ambient red glow */}
+        <div
+          className="absolute inset-0 opacity-40"
+          style={{
+            background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(192,21,42,0.15) 0%, transparent 70%)',
+          }}
+        />
+        <div className="relative max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
+            {stats.map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1, ease: 'easeOut' }}
+                className="relative bg-[#111111] border border-white/8 rounded-2xl px-4 py-8 text-center hover:border-[#C0152A]/40 transition-all duration-300 group overflow-hidden"
+              >
+                {/* Subtle hover glow */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ background: 'radial-gradient(circle at 50% 0%, rgba(192,21,42,0.12), transparent 70%)' }}
+                />
+                {/* Thin red accent line at top */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#C0152A] rounded-full" />
+                <p className="relative font-display font-black text-3xl md:text-4xl text-white mb-1">{stat.value}</p>
+                <p className="relative text-xs md:text-sm uppercase tracking-widest text-white/50">{stat.label}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
-
-      {/* Section transition fade */}
-      <div className="h-10 bg-gradient-to-b from-[#8B0D1C] to-[#0A0A0A]" />
 
       {/* Services Grid */}
       <section

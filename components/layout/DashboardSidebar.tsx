@@ -12,7 +12,7 @@ import {
   Share2,
   Truck,
   BarChart3,
-  Settings,
+  Settings as SettingsIcon,
   LogOut,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,7 @@ const sidebarLinks = [
   { href: '/social', label: 'Social Media', icon: Share2 },
   { href: '/tracking', label: 'Order Tracking', icon: Truck },
   { href: '/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/settings', label: 'Settings', icon: SettingsIcon },
 ]
 
 export default function DashboardSidebar() {
@@ -74,15 +75,7 @@ export default function DashboardSidebar() {
         </nav>
       </ScrollArea>
 
-      <div className="p-3 border-t border-white/5 space-y-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start text-[#9A9A9A] hover:text-[#F5F5F5]"
-        >
-          <Settings className="h-4 w-4 mr-2" />
-          Settings
-        </Button>
+      <div className="p-3 border-t border-white/5">
         <Button
           variant="ghost"
           size="sm"
