@@ -101,11 +101,11 @@ export default function StoreAdminPage() {
               <Card key={product.id} className="bg-[#1A1A1A] border-white/5">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-display font-bold text-[#F5F5F5]">{product.name}</h3>
+                    <h3 className="font-display font-semibold text-[#F5F5F5] text-[15px]">{product.name}</h3>
                     <Badge variant={product.active ? 'default' : 'secondary'} className={product.active ? 'bg-green-500/20 text-green-400' : 'text-[#9A9A9A]'}>{product.active ? 'Active' : 'Inactive'}</Badge>
                   </div>
                   <p className="font-display text-xl font-bold text-[#C0152A]">R {Number(product.price).toFixed(2)}</p>
-                  <p className="text-xs text-[#9A9A9A] mt-1">Stock: {product.stock} | SKU: {product.sku || 'N/A'}</p>
+                  <p className="text-xs text-white/50 mt-1">Stock: {product.stock} | SKU: {product.sku || 'N/A'}</p>
                   <div className="flex items-center gap-2 mt-3">
                     <Button variant="ghost" size="sm" onClick={() => toggleActive(product)} className="text-xs text-[#9A9A9A]">{product.active ? 'Deactivate' : 'Activate'}</Button>
                     <Button variant="ghost" size="sm" onClick={() => openEdit(product)} className="text-[#9A9A9A] hover:text-[#C0152A]"><Edit2 className="h-4 w-4" /></Button>

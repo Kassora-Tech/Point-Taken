@@ -1,5 +1,6 @@
 'use client'
 
+import './calendar-theme.css'
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import FullCalendar from '@fullcalendar/react'
@@ -71,6 +72,14 @@ export default function CalendarPage() {
         </div>
       </div>
 
+      {/* Event type legend */}
+      <div className="flex items-center gap-6 text-xs text-white/50 mb-2">
+        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#C0152A]" /> Event</span>
+        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" /> Meeting</span>
+        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#3B82F6]" /> Delivery</span>
+        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" /> Deadline</span>
+      </div>
+
       <Card className="bg-[#1A1A1A] border-white/5">
         <CardContent className="p-4">
           <FullCalendar
@@ -87,8 +96,9 @@ export default function CalendarPage() {
               start: e.start_date,
               end: e.end_date || undefined,
               allDay: e.all_day,
-              backgroundColor: e.color || '#C0152A',
-              borderColor: e.color || '#C0152A',
+              classNames: [`event-type-${e.type || 'event'}`],
+              backgroundColor: 'transparent',
+              borderColor: 'transparent',
               textColor: '#F5F5F5',
             }))}
             dateClick={handleDateClick}
@@ -117,17 +127,31 @@ export default function CalendarPage() {
               </div>
             </div>
             <Input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="bg-[#0A0A0A] border-white/10 text-[#F5F5F5]" />
-            <Select value={form.type} onValueChange={(v) => v && setForm({ ...form, type: v as 'event' | 'meeting' | 'delivery' | 'deadline' })}>
-              <SelectTrigger className="bg-[#0A0A0A] border-white/10 text-[#F5F5F5]">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#1A1A1A] border-white/10 text-[#F5F5F5]">
-                <SelectItem value="event">Event</SelectItem>
-                <SelectItem value="meeting">Meeting</SelectItem>
-                <SelectItem value="delivery">Delivery</SelectItem>
-                <SelectItem value="deadline">Deadline</SelectItem>
-              </SelectContent>
-            </Select>
+            <div>
+              <label className="text-xs text-[#9A9A9A] mb-2 block">Type</label>
+              <div className="flex gap-2">
+                {[
+                  { value: 'event', label: 'Event', color: '#C0152A' },
+                  { value: 'meeting', label: 'Meeting', color: '#F59E0B' },
+                  { value: 'delivery', label: 'Delivery', color: '#3B82F6' },
+                  { value: 'deadline', label: 'Deadline', color: '#EF4444' },
+                ].map((t) => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => setForm({ ...form, type: t.value as any, color: t.color })}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      form.type === t.value
+                        ? 'text-white shadow-sm'
+                        : 'text-white/40 hover:text-white/70 bg-white/5'
+                    }`}
+                    style={form.type === t.value ? { background: `${t.color}25`, border: `1px solid ${t.color}50`, color: t.color } : { background: 'transparent', border: '1px solid rgba(255,255,255,0.08)' }}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <Button type="submit" disabled={saving} className="w-full bg-[#C0152A] hover:bg-[#E8354A] text-white">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
               Create Event

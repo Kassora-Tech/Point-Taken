@@ -117,12 +117,12 @@ export default function BlogAdminPage() {
                 <div key={post.id} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-display font-bold text-[#F5F5F5] truncate">{post.title}</h3>
+                      <h3 className="font-display font-semibold text-base text-[#F5F5F5] truncate">{post.title}</h3>
                       <Badge variant={post.published ? 'default' : 'secondary'} className={post.published ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}>
                         {post.published ? 'Published' : 'Draft'}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-[#9A9A9A] mt-1">
+                    <div className="flex items-center gap-4 text-xs text-white/45 mt-1">
                       <span>{post.slug}</span>
                       <span>{formatDate(post.created_at)}</span>
                       <span>{post.views || 0} views</span>

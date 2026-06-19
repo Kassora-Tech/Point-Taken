@@ -9,7 +9,14 @@ import { Package, ShoppingCart, FileText, Eye } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts'
 import type { Order, BlogPost, Product } from '@/lib/types'
 
-const COLORS = ['#C0152A', '#E8354A', '#8B0D1C', '#2A2A2A', '#9A9A9A', '#F5F5F5']
+const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
+  pending:    { bg: '#F59E0B', text: '#FCD34D', label: 'Pending' },
+  confirmed:  { bg: '#3B82F6', text: '#93C5FD', label: 'Confirmed' },
+  processing: { bg: '#A855F7', text: '#D8B4FE', label: 'Processing' },
+  shipped:    { bg: '#F97316', text: '#FDBA74', label: 'Shipped' },
+  delivered:  { bg: '#22C55E', text: '#86EFAC', label: 'Delivered' },
+  cancelled:  { bg: '#EF4444', text: '#FCA5A5', label: 'Cancelled' },
+}
 
 export default function ReportsPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -137,10 +144,19 @@ export default function ReportsPage() {
             {statusChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
-                  <Pie data={statusChartData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name }) => name}>
-                    {statusChartData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  <Pie data={statusChartData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
+                    {statusChartData.map((entry, i) => {
+                      const color = STATUS_COLORS[entry.name]?.bg || '#9A9A9A'
+                      return <Cell key={i} fill={color} />
+                    })}
                   </Pie>
-                  <Tooltip contentStyle={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5' }} />
+                  <Legend
+                    formatter={(value: string) => {
+                      const config = STATUS_COLORS[value]
+                      return <span style={{ color: config?.text || '#9A9A9A' }}>{config?.label || value}</span>
+                    }}
+                  />
+                  <Tooltip contentStyle={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#F5F5F5' }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : <p className="text-[#9A9A9A] text-sm">No data for this period.</p>}
