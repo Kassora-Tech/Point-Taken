@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { MapPin, Phone, Mail, Clock, Send, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -160,11 +161,32 @@ export default function ContactPage() {
                   <div>
                     <p className="text-[#F5F5F5] text-sm">orders.ptg1@gmail.com</p>
                     <p className="text-[#F5F5F5] text-sm">admin@pointtaken.co.za</p>
+                    <p className="text-[#F5F5F5] text-sm">sales@pointtaken.co.za</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock className="h-5 w-5 text-[#C0152A] shrink-0" />
                   <p className="text-[#F5F5F5] text-sm">Mon-Fri: 8AM-5PM | Sat: 8AM-1PM</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Sales Rep */}
+            <div className="bg-[#1A1A1A] rounded-2xl border border-white/5 p-8">
+              <h2 className="font-display text-2xl font-bold text-[#F5F5F5] mb-6">Sales Representative</h2>
+              <div className="flex items-center gap-5">
+                <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-[#C0152A]/30 shrink-0">
+                  <Image
+                    src="https://i.ibb.co/jvPVF64x/Whats-App-Image-2026-06-22-at-18-22-05.jpg"
+                    alt="Brenda Neels"
+                    fill
+                    className="object-cover"
+                    preload
+                  />
+                </div>
+                <div>
+                  <p className="font-display font-bold text-lg text-[#F5F5F5]">Brenda Neels</p>
+                  <p className="text-[#C0152A] text-sm">Sales Representative</p>
                 </div>
               </div>
             </div>

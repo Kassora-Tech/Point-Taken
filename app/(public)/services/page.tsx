@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Truck, Shield, Heart, Building2, BarChart3, Users, CheckCircle } from 'lucide-react'
+import { Truck, Shield, Heart, Building2, BarChart3, Users, UserPlus, CheckCircle } from 'lucide-react'
 import ContactSection from '@/components/public/ContactSection'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -43,6 +43,12 @@ const services = [
     desc: 'Dedicated teams providing proactive communication and personalized service.',
     features: ['Single point of contact', 'Monthly performance reviews', '24/7 support line', 'Custom reporting'],
   },
+  {
+    icon: UserPlus,
+    title: 'Nursing Recruitment',
+    desc: 'Specialist recruitment of qualified nursing professionals for healthcare facilities across South Africa.',
+    features: ['SANC registered nurses', 'Auxiliary and enrolled nurses', 'Care workers', 'Temporary and permanent placement'],
+  },
 ]
 
 const certifications = [
@@ -50,6 +56,11 @@ const certifications = [
   { label: 'SAHPRA', value: '00003162MD' },
   { label: 'MAAA', value: '1157674' },
   { label: 'CSR', value: '1035270' },
+]
+
+const affiliations = [
+  'Member of National Contract Cleaners Association',
+  '3-Year Contract Partner — PURCO SA',
 ]
 
 export default function ServicesPage() {
@@ -117,6 +128,18 @@ export default function ServicesPage() {
                 <div key={cert.label} className="bg-[#1A1A1A] rounded-2xl border border-white/5 p-6">
                   <div className="font-display text-2xl font-bold text-[#C0152A]">{cert.value}</div>
                   <div className="text-[#9A9A9A] text-sm mt-1">{cert.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Affiliations & Partnerships */}
+            <div className="flex flex-wrap justify-center gap-4 mb-12">
+              {affiliations.map((aff) => (
+                <div
+                  key={aff}
+                  className="bg-[#1A1A1A] border border-[#C0152A]/20 rounded-full px-6 py-3 text-sm text-[#F5F5F5] font-medium"
+                >
+                  {aff}
                 </div>
               ))}
             </div>

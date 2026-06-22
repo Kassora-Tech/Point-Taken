@@ -19,6 +19,11 @@ const milestones = [
   { year: '2024', event: 'Expanded to 4 cities nationwide' },
 ]
 
+const affiliations = [
+  'Member of National Contract Cleaners Association',
+  '3-Year Contract Partner — PURCO SA',
+]
+
 export default function AboutPage() {
   return (
     <div className="min-h-screen">
@@ -139,6 +144,32 @@ export default function AboutPage() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Affiliations */}
+      <section className="py-20 bg-[#0A0A0A]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <span className="text-[#C0152A] text-sm font-semibold tracking-widest font-display uppercase">Affiliations</span>
+            <h2 className="font-display text-4xl sm:text-5xl font-black text-[#F5F5F5] mt-4 mb-10">
+              Partnerships & Memberships
+            </h2>
+            <div className="flex flex-wrap justify-center gap-4">
+              {affiliations.map((aff) => (
+                <div
+                  key={aff}
+                  className="bg-[#1A1A1A] border border-[#C0152A]/20 rounded-full px-6 py-3 text-sm text-[#F5F5F5] font-medium"
+                >
+                  {aff}
+                </div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
 
