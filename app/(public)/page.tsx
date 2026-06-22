@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Package, Truck, Heart, Building2, Lightbulb, Users } from 'lucide-react'
+import { ArrowRight, Package, Truck, Heart, Building2, Lightbulb, Users, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import HeroPTG from '@/components/public/HeroPTG'
 import BlogCard from '@/components/public/BlogCard'
@@ -25,6 +25,7 @@ const services = [
   { icon: Building2, title: 'Government Contracts', description: 'LOGIS-certified supplier for public sector procurement needs.' },
   { icon: Lightbulb, title: 'Consultation Services', description: 'Strategic supply chain consulting tailored to your business requirements.' },
   { icon: Users, title: 'Account Management', description: 'Dedicated account teams providing proactive communication and support.' },
+  { icon: UserPlus, title: 'Nursing Recruitment', description: 'Specialist recruitment of SANC-registered nursing professionals for healthcare facilities nationwide.' },
 ]
 
 const marqueeText = 'Excellence · Innovation · Integrity · Sustainability · Point-Taken Group ·'
@@ -84,6 +85,32 @@ export default function HomePage() {
                 <p className="relative text-xs md:text-sm uppercase tracking-widest text-white/50">{stat.label}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PURCO SA Banner */}
+      <section className="relative py-14 bg-[#111111] overflow-hidden border-t border-white/5">
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(192,21,42,0.12) 0%, transparent 70%)' }}
+        />
+        <div className="relative max-w-7xl mx-auto px-4 text-center">
+          <div className="inline-flex items-center gap-3 bg-[#C0152A]/10 border border-[#C0152A]/20 rounded-full px-6 py-2 mb-4">
+            <span className="text-[#C0152A] font-display font-bold text-sm tracking-wider">PARTNER</span>
+          </div>
+          <p className="font-display text-2xl sm:text-3xl font-bold text-[#F5F5F5]">
+            Proud 3-Year Contract Partner of{' '}
+            <span className="text-[#C0152A]">PURCO SA</span>
+          </p>
+          <p className="text-[#9A9A9A] text-sm mt-2 max-w-xl mx-auto">
+            Delivering procurement solutions aligned with PURCO SA's national framework
+          </p>
+          <div className="flex flex-wrap justify-center gap-3 mt-5">
+            <span className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-[#9A9A9A]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#C0152A]" />
+              Member of National Contract Cleaners Association
+            </span>
           </div>
         </div>
       </section>
