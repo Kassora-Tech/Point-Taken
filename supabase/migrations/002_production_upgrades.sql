@@ -4,6 +4,37 @@
 -- Run this in Supabase SQL Editor (Dashboard → SQL Editor → New query)
 -- ============================================================
 
+-- 0. Ensure tables from 001 exist (safe to re-run — uses IF NOT EXISTS)
+CREATE TABLE IF NOT EXISTS enquiries (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  company TEXT,
+  message TEXT NOT NULL,
+  product_id UUID REFERENCES products(id),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS subscribers (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE enquiries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscribers ENABLE ROW LEVEL SECURITY;
+
+-- Public can insert enquiries and subscribe
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'enquiries' AND policyname = 'Public can insert enquiries') THEN
+    CREATE POLICY "Public can insert enquiries" ON enquiries FOR INSERT WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'subscribers' AND policyname = 'Public can insert subscribers') THEN
+    CREATE POLICY "Public can insert subscribers" ON subscribers FOR INSERT WITH CHECK (true);
+  END IF;
+END $$;
+
 -- 1. User Preferences table (notification & appearance settings)
 CREATE TABLE IF NOT EXISTS user_preferences (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
