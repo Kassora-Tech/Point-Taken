@@ -6,9 +6,9 @@ import { formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
@@ -20,9 +20,11 @@ export default function StoreAdminPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [orderDialogOpen, setOrderDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ name: '', description: '', price: '', category: '', stock: '', sku: '', images: '' })
+  const [orderForm, setOrderForm] = useState({ customer_name: '', customer_email: '', customer_phone: '', delivery_address: '', notes: '', items: '' as string, total: '' })
   const supabase = createClient()
 
   useEffect(() => { fetchData() }, [])
@@ -30,7 +32,7 @@ export default function StoreAdminPage() {
   async function fetchData() {
     const [pRes, oRes] = await Promise.all([
       supabase.from('products').select('*').order('created_at', { ascending: false }),
-      supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(20),
+      supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(50),
     ])
     if (pRes.data) setProducts(pRes.data as Product[])
     if (oRes.data) setOrders(oRes.data as Order[])
@@ -70,9 +72,49 @@ export default function StoreAdminPage() {
     if (error) toast.error('Failed'); else fetchData()
   }
 
+  async function deleteProduct(product: Product) {
+    if (!confirm(`Delete "${product.name}"? This cannot be undone.`)) return
+    const { error } = await supabase.from('products').delete().eq('id', product.id)
+    if (error) toast.error(error.message || 'Failed to delete')
+    else { toast.success('Product deleted!'); fetchData() }
+  }
+
   async function updateOrderStatus(order: Order, status: string) {
     const { error } = await supabase.from('orders').update({ status }).eq('id', order.id)
     if (error) toast.error('Failed'); else { toast.success('Status updated!'); fetchData() }
+  }
+
+  async function handleCreateOrder(e: React.FormEvent) {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      let items: any[]
+      try {
+        items = JSON.parse(orderForm.items)
+        if (!Array.isArray(items)) throw new Error()
+      } catch {
+        toast.error('Items must be valid JSON array, e.g. [{"name":"Item","quantity":1,"price":100}]')
+        setSaving(false)
+        return
+      }
+      const total = parseFloat(orderForm.total) || items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
+      const { error } = await supabase.from('orders').insert({
+        customer_name: orderForm.customer_name,
+        customer_email: orderForm.customer_email,
+        customer_phone: orderForm.customer_phone || null,
+        delivery_address: orderForm.delivery_address || null,
+        notes: orderForm.notes || null,
+        items,
+        total,
+        status: 'pending',
+      })
+      if (error) throw error
+      toast.success('Order created!')
+      setOrderDialogOpen(false)
+      setOrderForm({ customer_name: '', customer_email: '', customer_phone: '', delivery_address: '', notes: '', items: '', total: '' })
+      fetchData()
+    } catch (err: any) { toast.error(err.message) }
+    finally { setSaving(false) }
   }
 
   const statusColor: Record<string, string> = { pending: 'text-yellow-500', confirmed: 'text-blue-500', processing: 'text-orange-500', shipped: 'text-blue-400', delivered: 'text-green-500', cancelled: 'text-red-500' }
@@ -86,13 +128,16 @@ export default function StoreAdminPage() {
           <h1 className="font-display text-3xl font-bold text-[#F5F5F5]">Store Manager</h1>
           <p className="text-[#9A9A9A] mt-1">Manage products and orders.</p>
         </div>
-        <Button onClick={openNew} className="bg-[#C0152A] hover:bg-[#E8354A] text-white"><Plus className="h-4 w-4 mr-2" /> New Product</Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setOrderDialogOpen(true)} variant="outline" className="border-white/10 text-[#F5F5F5]"><ShoppingCart className="h-4 w-4 mr-2" /> New Order</Button>
+          <Button onClick={openNew} className="bg-[#C0152A] hover:bg-[#E8354A] text-white"><Plus className="h-4 w-4 mr-2" /> New Product</Button>
+        </div>
       </div>
 
       <Tabs defaultValue="products" className="space-y-6">
         <TabsList className="bg-[#1A1A1A] border border-white/5">
-          <TabsTrigger value="products" className="text-[#9A9A9A] data-[state=active]:text-[#F5F5F5]"><Package className="h-4 w-4 mr-2" /> Products</TabsTrigger>
-          <TabsTrigger value="orders" className="text-[#9A9A9A] data-[state=active]:text-[#F5F5F5]"><ShoppingCart className="h-4 w-4 mr-2" /> Orders</TabsTrigger>
+          <TabsTrigger value="products" className="text-[#9A9A9A] data-[state=active]:text-[#F5F5F5]"><Package className="h-4 w-4 mr-2" /> Products ({products.length})</TabsTrigger>
+          <TabsTrigger value="orders" className="text-[#9A9A9A] data-[state=active]:text-[#F5F5F5]"><ShoppingCart className="h-4 w-4 mr-2" /> Orders ({orders.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="products">
@@ -106,9 +151,11 @@ export default function StoreAdminPage() {
                   </div>
                   <p className="font-display text-xl font-bold text-[#C0152A]">R {Number(product.price).toFixed(2)}</p>
                   <p className="text-xs text-white/50 mt-1">Stock: {product.stock} | SKU: {product.sku || 'N/A'}</p>
-                  <div className="flex items-center gap-2 mt-3">
+                  {product.category && <Badge variant="outline" className="mt-2 text-xs">{product.category}</Badge>}
+                  <div className="flex items-center gap-1 mt-3">
                     <Button variant="ghost" size="sm" onClick={() => toggleActive(product)} className="text-xs text-[#9A9A9A]">{product.active ? 'Deactivate' : 'Activate'}</Button>
                     <Button variant="ghost" size="sm" onClick={() => openEdit(product)} className="text-[#9A9A9A] hover:text-[#C0152A]"><Edit2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => deleteProduct(product)} className="text-[#9A9A9A] hover:text-red-500"><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 </CardContent>
               </Card>
@@ -151,6 +198,7 @@ export default function StoreAdminPage() {
         </TabsContent>
       </Tabs>
 
+      {/* Product Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="bg-[#1A1A1A] border-white/10 text-[#F5F5F5] max-w-lg">
           <DialogTitle className="font-display text-xl font-bold">{editing ? 'Edit Product' : 'New Product'}</DialogTitle>
@@ -174,6 +222,35 @@ export default function StoreAdminPage() {
             <Input placeholder="Image URLs (comma separated)" value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} className="bg-[#0A0A0A] border-white/10 text-[#F5F5F5]" />
             <Button type="submit" disabled={saving} className="w-full bg-[#C0152A] hover:bg-[#E8354A] text-white">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}{editing ? 'Update' : 'Create'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Order Creation Dialog */}
+      <Dialog open={orderDialogOpen} onOpenChange={setOrderDialogOpen}>
+        <DialogContent className="bg-[#1A1A1A] border-white/10 text-[#F5F5F5] max-w-lg">
+          <DialogTitle className="font-display text-xl font-bold">Create Order</DialogTitle>
+          <form onSubmit={handleCreateOrder} className="space-y-4">
+            <Input required placeholder="Customer name" value={orderForm.customer_name} onChange={(e) => setOrderForm({ ...orderForm, customer_name: e.target.value })} className="bg-[#0A0A0A] border-white/10 text-[#F5F5F5]" />
+            <Input required type="email" placeholder="Customer email" value={orderForm.customer_email} onChange={(e) => setOrderForm({ ...orderForm, customer_email: e.target.value })} className="bg-[#0A0A0A] border-white/10 text-[#F5F5F5]" />
+            <Input placeholder="Phone number" value={orderForm.customer_phone} onChange={(e) => setOrderForm({ ...orderForm, customer_phone: e.target.value })} className="bg-[#0A0A0A] border-white/10 text-[#F5F5F5]" />
+            <Input placeholder="Delivery address" value={orderForm.delivery_address} onChange={(e) => setOrderForm({ ...orderForm, delivery_address: e.target.value })} className="bg-[#0A0A0A] border-white/10 text-[#F5F5F5]" />
+            <div>
+              <label className="text-xs text-[#9A9A9A] mb-1 block">Items (JSON) *</label>
+              <Textarea
+                required
+                placeholder='[{"name": "Product Name", "quantity": 1, "price": 100.00}]'
+                value={orderForm.items}
+                onChange={(e) => setOrderForm({ ...orderForm, items: e.target.value })}
+                className="bg-[#0A0A0A] border-white/10 text-[#F5F5F5] font-mono text-xs min-h-[80px]"
+              />
+            </div>
+            <Input type="number" step="0.01" placeholder="Total (auto-calculated if blank)" value={orderForm.total} onChange={(e) => setOrderForm({ ...orderForm, total: e.target.value })} className="bg-[#0A0A0A] border-white/10 text-[#F5F5F5]" />
+            <Textarea placeholder="Notes" value={orderForm.notes} onChange={(e) => setOrderForm({ ...orderForm, notes: e.target.value })} className="bg-[#0A0A0A] border-white/10 text-[#F5F5F5]" />
+            <Button type="submit" disabled={saving} className="w-full bg-[#C0152A] hover:bg-[#E8354A] text-white">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ShoppingCart className="h-4 w-4 mr-2" />}
+              Create Order
             </Button>
           </form>
         </DialogContent>

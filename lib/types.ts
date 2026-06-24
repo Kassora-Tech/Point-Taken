@@ -140,3 +140,15 @@ export interface Subscriber {
   email: string
   created_at: string
 }
+
+export interface UserPreferences {
+  id: string
+  user_id: string
+  email_orders: boolean
+  email_stock: boolean
+  email_digest: 'daily' | 'weekly' | 'off'
+  push_notifications: boolean
+  theme: 'dark' | 'light'
+  created_at: string
+  updated_at: string
+}

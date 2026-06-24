@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -11,20 +11,41 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
-import { 
+import {
   User, Bell, Building2, Shield, Users2, Palette, AlertTriangle,
-  Loader2, Save, Camera, Eye, EyeOff, ChevronRight
+  Loader2, Save, Camera, Eye, EyeOff, ChevronRight, LogOut
 } from 'lucide-react'
+import type { Profile } from '@/lib/types'
+
+interface UserPreferences {
+  email_orders: boolean
+  email_stock: boolean
+  email_digest: string
+  push_notifications: boolean
+  theme: string
+}
+
+const DEFAULT_PREFS: UserPreferences = {
+  email_orders: true,
+  email_stock: false,
+  email_digest: 'weekly',
+  push_notifications: false,
+  theme: 'dark',
+}
 
 export default function SettingsPage() {
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
-  
+  const [teamMembers, setTeamMembers] = useState<Profile[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+
   // Profile form
   const [fullName, setFullName] = useState('')
-  
+
   // Security form
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -32,12 +53,13 @@ export default function SettingsPage() {
   const [showCurrentPw, setShowCurrentPw] = useState(false)
   const [showNewPw, setShowNewPw] = useState(false)
 
-  // Demo toggle states
-  const [emailOrders, setEmailOrders] = useState(true)
-  const [emailStock, setEmailStock] = useState(false)
-  const [emailDigest, setEmailDigest] = useState('weekly')
-  const [pushNotifications, setPushNotifications] = useState(false)
-  const [twoFactor, setTwoFactor] = useState(false)
+  // Notification preferences (persisted)
+  const [prefs, setPrefs] = useState<UserPreferences>(DEFAULT_PREFS)
+  const [savingPrefs, setSavingPrefs] = useState(false)
+
+  // Danger zone
+  const [deleteConfirm, setDeleteConfirm] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     async function init() {
@@ -52,6 +74,26 @@ export default function SettingsPage() {
             setProfile(p)
             setFullName(p.full_name || '')
           }
+
+          // Load notification preferences
+          const { data: prefData } = await supabase
+            .from('user_preferences')
+            .select('*')
+            .eq('user_id', u.id)
+            .single()
+          if (prefData) {
+            setPrefs({
+              email_orders: prefData.email_orders,
+              email_stock: prefData.email_stock,
+              email_digest: prefData.email_digest,
+              push_notifications: prefData.push_notifications,
+              theme: prefData.theme,
+            })
+          }
+
+          // Load team members
+          const { data: team } = await supabase.from('profiles').select('*').order('created_at', { ascending: true })
+          if (team) setTeamMembers(team as Profile[])
         }
       } catch (e) {
         console.error(e)
@@ -77,7 +119,82 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image must be under 2MB')
+      return
+    }
+
+    setUploadingAvatar(true)
+    try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}/avatar.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true })
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName)
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id)
+      if (updateError) throw updateError
+
+      await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl }
+      })
+
+      setProfile({ ...profile, avatar_url: publicUrl })
+      setUser({ ...user, user_metadata: { ...user.user_metadata, avatar_url: publicUrl } })
+      toast.success('Avatar updated')
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to upload avatar')
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
+
+  async function savePreferences() {
+    setSavingPrefs(true)
+    try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('user_preferences')
+        .upsert({
+          user_id: user.id,
+          email_orders: prefs.email_orders,
+          email_stock: prefs.email_stock,
+          email_digest: prefs.email_digest,
+          push_notifications: prefs.push_notifications,
+          theme: prefs.theme,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+      if (error) throw error
+      toast.success('Preferences saved')
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save preferences')
+    } finally {
+      setSavingPrefs(false)
+    }
+  }
+
   async function changePassword() {
+    if (newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters')
+      return
+    }
     if (newPassword !== confirmNewPassword) {
       toast.error('Passwords do not match')
       return
@@ -97,8 +214,39 @@ export default function SettingsPage() {
     }
   }
 
-  function demoToast(msg?: string) {
-    toast.success(msg || 'Preferences saved (demo mode)')
+  async function signOutAllSessions() {
+    try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      const { error } = await supabase.auth.signOut({ scope: 'global' })
+      if (error) throw error
+      toast.success('Signed out of all sessions')
+      router.push('/auth/login')
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to sign out')
+    }
+  }
+
+  async function deleteAccount() {
+    if (deleteConfirm !== 'DELETE') {
+      toast.error('Type DELETE to confirm')
+      return
+    }
+    setDeleting(true)
+    try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      // Soft-delete: deactivate profile and sign out
+      await supabase.from('profiles').update({ role: 'viewer', full_name: '[Deleted User]' }).eq('id', user.id)
+      await supabase.from('user_preferences').delete().eq('user_id', user.id)
+      await supabase.auth.signOut({ scope: 'global' })
+      toast.success('Account deactivated')
+      router.push('/auth/login')
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete account')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   if (loading) {
@@ -153,17 +301,34 @@ export default function SettingsPage() {
               {/* Avatar */}
               <div className="flex items-center gap-4">
                 <div className="relative w-20 h-20 rounded-full overflow-hidden bg-[#1A1A1A] border border-white/10">
-                  {user?.user_metadata?.avatar_url ? (
-                    <Image src={user.user_metadata.avatar_url} alt="Avatar" fill className="object-cover" />
+                  {(profile?.avatar_url || user?.user_metadata?.avatar_url) ? (
+                    <Image src={profile?.avatar_url || user.user_metadata.avatar_url} alt="Avatar" fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <User className="h-8 w-8 text-[#9A9A9A]" />
                     </div>
                   )}
                 </div>
-                <Button variant="outline" size="sm" className="border-white/10 text-[#9A9A9A]" onClick={() => demoToast('Avatar upload coming soon')}>
-                  <Camera className="h-4 w-4 mr-2" /> Change Photo
-                </Button>
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-white/10 text-[#9A9A9A]"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingAvatar}
+                  >
+                    {uploadingAvatar ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Camera className="h-4 w-4 mr-2" />}
+                    {uploadingAvatar ? 'Uploading...' : 'Change Photo'}
+                  </Button>
+                  <p className="text-xs text-white/30 mt-1">Max 2MB, JPG or PNG</p>
+                </div>
               </div>
 
               {/* Full Name */}
@@ -203,20 +368,23 @@ export default function SettingsPage() {
             <CardContent className="p-6 space-y-6">
               <div>
                 <h2 className="font-display font-bold text-xl text-[#F5F5F5]">Notifications</h2>
-                <p className="text-white/50 text-xs mt-1">Demo mode — preferences are not yet saved</p>
+                <p className="text-white/50 text-sm mt-1">Configure how you receive notifications.</p>
               </div>
-              <ToggleRow label="Email notifications for new orders" checked={emailOrders} onChange={setEmailOrders} />
-              <ToggleRow label="Email notifications for low stock alerts" checked={emailStock} onChange={setEmailStock} />
+              <ToggleRow label="Email notifications for new orders" checked={prefs.email_orders} onChange={(v) => setPrefs({ ...prefs, email_orders: v })} />
+              <ToggleRow label="Email notifications for low stock alerts" checked={prefs.email_stock} onChange={(v) => setPrefs({ ...prefs, email_stock: v })} />
               <div>
                 <label className="text-sm text-[#9A9A9A] mb-1 block">Email digest frequency</label>
-                <select value={emailDigest} onChange={(e) => setEmailDigest(e.target.value)} className="bg-[#0A0A0A] border border-white/10 text-[#F5F5F5] rounded-lg px-3 py-2 text-sm max-w-xs">
+                <select value={prefs.email_digest} onChange={(e) => setPrefs({ ...prefs, email_digest: e.target.value })} className="bg-[#0A0A0A] border border-white/10 text-[#F5F5F5] rounded-lg px-3 py-2 text-sm max-w-xs">
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
                   <option value="off">Off</option>
                 </select>
               </div>
-              <ToggleRow label="Browser push notifications" checked={pushNotifications} onChange={setPushNotifications} />
-              <Button onClick={() => demoToast()} className="bg-[#C0152A] hover:bg-[#E8354A] text-white">Save Preferences</Button>
+              <ToggleRow label="Browser push notifications" checked={prefs.push_notifications} onChange={(v) => setPrefs({ ...prefs, push_notifications: v })} />
+              <Button onClick={savePreferences} disabled={savingPrefs} className="bg-[#C0152A] hover:bg-[#E8354A] text-white">
+                {savingPrefs ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                Save Preferences
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -280,25 +448,30 @@ export default function SettingsPage() {
 
               <Separator className="bg-white/10" />
 
-              {/* 2FA */}
-              <ToggleRow label="Two-Factor Authentication" checked={twoFactor} onChange={setTwoFactor} badge="Coming soon" />
-
-              <Separator className="bg-white/10" />
-
               {/* Active Sessions */}
               <div>
-                <p className="text-sm font-semibold text-[#F5F5F5] mb-3">Active Sessions</p>
+                <p className="text-sm font-semibold text-[#F5F5F5] mb-3">Session Management</p>
                 <div className="bg-[#0A0A0A] rounded-xl p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-[#F5F5F5] font-medium">Current session</p>
-                      <p className="text-xs text-[#9A9A9A]">Chrome on Windows · Bloemfontein, ZA</p>
+                      <p className="text-xs text-[#9A9A9A]">Logged in as {user?.email}</p>
                     </div>
-                    <Badge className="bg-green-500/15 text-green-400 border-green-500/30">Active now</Badge>
+                    <Badge className="bg-green-500/15 text-green-400 border-green-500/30">Active</Badge>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" disabled className="border-white/10 text-[#9A9A9A] mt-3" onClick={() => demoToast('Feature coming soon')}>
-                  Sign out all other sessions
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-white/10 text-[#9A9A9A] hover:text-red-400 hover:border-red-500/30 mt-3"
+                  onClick={() => {
+                    if (confirm('This will sign you out of all devices. Continue?')) {
+                      signOutAllSessions()
+                    }
+                  }}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign out all sessions
                 </Button>
               </div>
             </CardContent>
@@ -309,31 +482,40 @@ export default function SettingsPage() {
         <TabsContent value="team" className="space-y-6">
           <Card className="bg-[#111111] border-white/8 rounded-2xl">
             <CardContent className="p-6 space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-display font-bold text-xl text-[#F5F5F5]">Team Members</h2>
-                  <p className="text-white/50 text-sm mt-1">Manage your team.</p>
-                </div>
-                <Button variant="outline" className="border-[#C0152A]/30 text-[#C0152A]" onClick={() => toast.info('Invitation feature coming soon — for now, ask new users to sign up at /auth/signup and an admin can assign their role manually in Supabase.')}>
-                  Invite Team Member
-                </Button>
+              <div>
+                <h2 className="font-display font-bold text-xl text-[#F5F5F5]">Team Members</h2>
+                <p className="text-white/50 text-sm mt-1">{teamMembers.length} member{teamMembers.length !== 1 ? 's' : ''} on this account.</p>
               </div>
               <div className="bg-[#0A0A0A] rounded-xl overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 text-xs text-white/40 uppercase tracking-wider">
+                <div className="grid grid-cols-4 gap-4 px-4 py-3 text-xs text-white/40 uppercase tracking-wider border-b border-white/5">
                   <span>Name</span>
-                  <span>Email</span>
                   <span>Role</span>
                   <span>Joined</span>
+                  <span>Status</span>
                 </div>
                 <div className="divide-y divide-white/5">
-                  <div className="flex items-center justify-between px-4 py-3 text-sm">
-                    <span className="text-[#F5F5F5] font-medium">{profile?.full_name || user?.email}</span>
-                    <span className="text-[#9A9A9A]">{user?.email}</span>
-                    <Badge variant="outline" className="border-[#C0152A]/30 text-[#C0152A] bg-[#C0152A]/10 text-xs">{profile?.role || 'Admin'}</Badge>
-                    <span className="text-[#9A9A9A] text-xs">{new Date(user?.created_at || '').toLocaleDateString()}</span>
-                  </div>
+                  {teamMembers.map((member) => (
+                    <div key={member.id} className="grid grid-cols-4 gap-4 items-center px-4 py-3 text-sm">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-7 h-7 rounded-full bg-[#C0152A]/10 flex items-center justify-center shrink-0">
+                          {member.avatar_url ? (
+                            <Image src={member.avatar_url} alt="" width={28} height={28} className="rounded-full object-cover" />
+                          ) : (
+                            <User className="h-3.5 w-3.5 text-[#C0152A]" />
+                          )}
+                        </div>
+                        <span className="text-[#F5F5F5] font-medium truncate">{member.full_name || 'Unnamed'}</span>
+                      </div>
+                      <Badge variant="outline" className="border-[#C0152A]/30 text-[#C0152A] bg-[#C0152A]/10 text-xs w-fit capitalize">{member.role}</Badge>
+                      <span className="text-[#9A9A9A] text-xs">{new Date(member.created_at).toLocaleDateString()}</span>
+                      <Badge className={member.id === user?.id ? 'bg-green-500/15 text-green-400 border-green-500/30 w-fit' : 'bg-white/5 text-white/40 w-fit'}>
+                        {member.id === user?.id ? 'You' : 'Active'}
+                      </Badge>
+                    </div>
+                  ))}
                 </div>
               </div>
+              <p className="text-xs text-white/30">New team members can sign up at <span className="text-[#C0152A]">/auth/signup</span> and will appear here automatically.</p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -358,15 +540,6 @@ export default function SettingsPage() {
                       <p className="text-xs text-[#C0152A]">Active</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 bg-[#1A1A1A] border border-white/5 rounded-xl px-4 py-3 opacity-50">
-                    <div className="w-8 h-8 rounded-full bg-white border border-white/20 flex items-center justify-center">
-                      <span className="text-[10px] font-bold text-black">PTG</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[#9A9A9A]">Light</p>
-                      <Badge className="bg-white/10 text-white/50 text-[10px]">Coming soon</Badge>
-                    </div>
-                  </div>
                 </div>
               </div>
               <div>
@@ -389,13 +562,28 @@ export default function SettingsPage() {
                 <h2 className="font-display font-bold text-xl text-red-500">Danger Zone</h2>
                 <p className="text-white/50 text-sm mt-1">Irreversible actions.</p>
               </div>
-              <div className="flex items-center justify-between p-4 bg-[#0A0A0A] rounded-xl border border-red-500/10">
+              <div className="p-4 bg-[#0A0A0A] rounded-xl border border-red-500/10 space-y-4">
                 <div>
-                  <p className="text-sm font-semibold text-[#F5F5F5]">Delete Account</p>
-                  <p className="text-xs text-[#9A9A9A]">Permanently delete your account and all associated data.</p>
+                  <p className="text-sm font-semibold text-[#F5F5F5]">Deactivate Account</p>
+                  <p className="text-xs text-[#9A9A9A] mt-1">This will deactivate your account and sign you out of all sessions. Your data will be retained but your access will be removed.</p>
                 </div>
-                <Button variant="outline" className="border-red-500/30 text-red-500 hover:bg-red-500/10" onClick={() => toast.error('Account deletion requires admin approval — contact admin@pointtaken.co.za')}>
-                  Delete Account
+                <div className="max-w-xs">
+                  <label className="text-xs text-red-400 mb-1 block">Type DELETE to confirm</label>
+                  <Input
+                    value={deleteConfirm}
+                    onChange={(e) => setDeleteConfirm(e.target.value)}
+                    placeholder="DELETE"
+                    className="bg-[#0A0A0A] border-red-500/20 text-[#F5F5F5]"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  className="border-red-500/30 text-red-500 hover:bg-red-500/10"
+                  onClick={deleteAccount}
+                  disabled={deleteConfirm !== 'DELETE' || deleting}
+                >
+                  {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Deactivate Account
                 </Button>
               </div>
             </CardContent>
