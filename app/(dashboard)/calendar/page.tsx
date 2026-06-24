@@ -7,20 +7,27 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { Plus, Loader2 } from 'lucide-react'
+import { Plus, Loader2, Trash2 } from 'lucide-react'
 import type { CalendarEvent } from '@/lib/types'
+
+const EVENT_TYPES = [
+  { value: 'event', label: 'Event', color: '#C0152A' },
+  { value: 'meeting', label: 'Meeting', color: '#F59E0B' },
+  { value: 'delivery', label: 'Delivery', color: '#3B82F6' },
+  { value: 'deadline', label: 'Deadline', color: '#EF4444' },
+]
 
 export default function CalendarPage() {
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [editing, setEditing] = useState<CalendarEvent | null>(null)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', start_date: '', end_date: '', location: '', type: 'event', color: '#C0152A', all_day: false })
   const supabase = createClient()
@@ -34,32 +41,71 @@ export default function CalendarPage() {
   }
 
   function handleDateClick(info: any) {
-    setForm({ ...form, start_date: info.dateStr, end_date: info.dateStr })
+    setEditing(null)
+    setForm({ title: '', description: '', start_date: info.dateStr, end_date: info.dateStr, location: '', type: 'event', color: '#C0152A', all_day: false })
+    setDialogOpen(true)
+  }
+
+  function handleEventClick(info: any) {
+    const event = events.find((e) => e.id === info.event.id)
+    if (!event) return
+    setEditing(event)
+    setForm({
+      title: event.title,
+      description: event.description || '',
+      start_date: event.start_date ? event.start_date.slice(0, 16) : '',
+      end_date: event.end_date ? event.end_date.slice(0, 16) : '',
+      location: event.location || '',
+      type: event.type,
+      color: event.color,
+      all_day: event.all_day,
+    })
     setDialogOpen(true)
   }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
+    const payload = {
+      title: form.title,
+      description: form.description || null,
+      start_date: form.start_date,
+      end_date: form.end_date || null,
+      location: form.location || null,
+      type: form.type,
+      color: form.color,
+      all_day: form.all_day,
+    }
     try {
-      const { error } = await supabase.from('events').insert({
-        title: form.title,
-        description: form.description || null,
-        start_date: form.start_date,
-        end_date: form.end_date || null,
-        location: form.location || null,
-        type: form.type,
-        color: form.color,
-        all_day: form.all_day,
-      })
-      if (error) throw error
-      toast.success('Event created!')
+      if (editing) {
+        const { error } = await supabase.from('events').update(payload).eq('id', editing.id)
+        if (error) throw error
+        toast.success('Event updated!')
+      } else {
+        const { error } = await supabase.from('events').insert(payload)
+        if (error) throw error
+        toast.success('Event created!')
+      }
       setDialogOpen(false)
       fetchEvents()
     } catch (err: any) {
-      toast.error(err.message || 'Failed to create event')
+      toast.error(err.message || 'Failed to save event')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!editing) return
+    if (!confirm('Delete this event?')) return
+    try {
+      const { error } = await supabase.from('events').delete().eq('id', editing.id)
+      if (error) throw error
+      toast.success('Event deleted!')
+      setDialogOpen(false)
+      fetchEvents()
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete')
     }
   }
 
@@ -74,10 +120,11 @@ export default function CalendarPage() {
 
       {/* Event type legend */}
       <div className="flex items-center gap-6 text-xs text-white/50 mb-2">
-        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#C0152A]" /> Event</span>
-        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" /> Meeting</span>
-        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#3B82F6]" /> Delivery</span>
-        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" /> Deadline</span>
+        {EVENT_TYPES.map((t) => (
+          <span key={t.value} className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: t.color }} /> {t.label}
+          </span>
+        ))}
       </div>
 
       <Card className="bg-[#1A1A1A] border-white/5">
@@ -102,6 +149,7 @@ export default function CalendarPage() {
               textColor: '#F5F5F5',
             }))}
             dateClick={handleDateClick}
+            eventClick={handleEventClick}
             height="auto"
             themeSystem="standard"
             slotMinTime="06:00:00"
@@ -112,7 +160,7 @@ export default function CalendarPage() {
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="bg-[#1A1A1A] border-white/10 text-[#F5F5F5]">
-          <DialogTitle className="font-display text-xl font-bold">New Event</DialogTitle>
+          <DialogTitle className="font-display text-xl font-bold">{editing ? 'Edit Event' : 'New Event'}</DialogTitle>
           <form onSubmit={handleSave} className="space-y-4">
             <Input required placeholder="Event title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="bg-[#0A0A0A] border-white/10 text-[#F5F5F5]" />
             <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="bg-[#0A0A0A] border-white/10 text-[#F5F5F5]" />
@@ -130,12 +178,7 @@ export default function CalendarPage() {
             <div>
               <label className="text-xs text-[#9A9A9A] mb-2 block">Type</label>
               <div className="flex gap-2">
-                {[
-                  { value: 'event', label: 'Event', color: '#C0152A' },
-                  { value: 'meeting', label: 'Meeting', color: '#F59E0B' },
-                  { value: 'delivery', label: 'Delivery', color: '#3B82F6' },
-                  { value: 'deadline', label: 'Deadline', color: '#EF4444' },
-                ].map((t) => (
+                {EVENT_TYPES.map((t) => (
                   <button
                     key={t.value}
                     type="button"
@@ -152,10 +195,17 @@ export default function CalendarPage() {
                 ))}
               </div>
             </div>
-            <Button type="submit" disabled={saving} className="w-full bg-[#C0152A] hover:bg-[#E8354A] text-white">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-              Create Event
-            </Button>
+            <div className="flex gap-3">
+              <Button type="submit" disabled={saving} className="flex-1 bg-[#C0152A] hover:bg-[#E8354A] text-white">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+                {editing ? 'Update Event' : 'Create Event'}
+              </Button>
+              {editing && (
+                <Button type="button" variant="outline" onClick={handleDelete} className="border-red-500/30 text-red-500 hover:bg-red-500/10">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </form>
         </DialogContent>
       </Dialog>
