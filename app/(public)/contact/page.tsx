@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 
+const ORDERS_EMAILS = ['Orders@pointtaken.co.za', 'orders.ptg1@gmail.com']
+
 const locations = [
   { city: 'Despatch', address: '28 Retief Street, Windsor Park, Despatch, 6220' },
   { city: 'Kimberly', address: '12 David Street, Cassandra, Kimberly, 8301' },
@@ -24,16 +26,24 @@ export default function ContactPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await fetch('/api/enquiries', {
+      fetch('/api/enquiries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
-      })
-      if (!res.ok) throw new Error('Failed')
-      toast.success('Enquiry submitted! We will be in touch.')
+      }).catch(() => {})
+
+      const subject = form.subject || 'Website Contact Form Enquiry'
+      const body = [
+        `Name: ${form.name}`,
+        `Email: ${form.email}`,
+        form.phone ? `Phone: ${form.phone}` : null,
+        '',
+        form.message,
+      ].filter(Boolean).join('\n')
+      window.location.href = `mailto:${ORDERS_EMAILS.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+
+      toast.success('Opening your email client to send the enquiry...')
       setForm({ name: '', email: '', phone: '', subject: '', message: '' })
-    } catch {
-      toast.error('Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
