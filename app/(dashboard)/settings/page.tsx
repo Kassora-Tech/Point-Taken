@@ -411,7 +411,7 @@ export default function SettingsPage() {
                 <p className="text-sm font-semibold text-[#F5F5F5] mb-2">Contact</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <InfoField label="Phone" value="073 957 6209 / 071 855 5447" />
-                  <InfoField label="Email" value="orders.ptg1@gmail.com / admin@pointtaken.co.za" />
+                  <InfoField label="Email" value="orders.ptg1@gmail.com / Orders@pointtaken.co.za" />
                 </div>
               </div>
               <Separator className="bg-white/10" />

@@ -63,8 +63,7 @@ export default function ContactSection() {
               <div>
                 <h4 className="font-display font-bold text-[#F5F5F5] text-sm mb-1">Email</h4>
                 <p className="text-[#9A9A9A] text-xs">orders.ptg1@gmail.com</p>
-                <p className="text-[#9A9A9A] text-xs">admin@pointtaken.co.za</p>
-                <p className="text-[#9A9A9A] text-xs">sales@pointtaken.co.za</p>
+                <p className="text-[#9A9A9A] text-xs">Orders@pointtaken.co.za</p>
               </div>
             </div>
             <div className="flex items-start gap-3">

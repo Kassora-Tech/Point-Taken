@@ -83,10 +83,7 @@ export default function Footer() {
                       <a href="mailto:orders.ptg1@gmail.com">orders.ptg1@gmail.com</a>
                     </p>
                     <p className="hover:text-white transition-colors">
-                      <a href="mailto:admin@pointtaken.co.za">admin@pointtaken.co.za</a>
-                    </p>
-                    <p className="hover:text-white transition-colors">
-                      <a href="mailto:sales@pointtaken.co.za">sales@pointtaken.co.za</a>
+                      <a href="mailto:Orders@pointtaken.co.za">Orders@pointtaken.co.za</a>
                     </p>
                   </div>
                 </li>

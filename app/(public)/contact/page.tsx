@@ -170,8 +170,7 @@ export default function ContactPage() {
                   <Mail className="h-5 w-5 text-[#C0152A] shrink-0" />
                   <div>
                     <p className="text-[#F5F5F5] text-sm">orders.ptg1@gmail.com</p>
-                    <p className="text-[#F5F5F5] text-sm">admin@pointtaken.co.za</p>
-                    <p className="text-[#F5F5F5] text-sm">sales@pointtaken.co.za</p>
+                    <p className="text-[#F5F5F5] text-sm">Orders@pointtaken.co.za</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

@@ -147,7 +147,7 @@ function ProductCard({ product }: { product: Product }) {
         {/* Actions */}
         <div className="flex gap-2 pt-1">
           <a
-            href={`mailto:info@pointtaken.co.za?subject=Quote Request: ${encodeURIComponent(product.name)}`}
+            href={`mailto:Orders@pointtaken.co.za,orders.ptg1@gmail.com?subject=Quote Request: ${encodeURIComponent(product.name)}`}
             className="flex-1"
           >
             <Button className="w-full bg-[#C0152A] hover:bg-[#E8354A] text-white font-semibold text-xs">
