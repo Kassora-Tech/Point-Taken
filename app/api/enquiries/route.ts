@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
 
-const ORDERS_EMAIL = 'Orders@ptaken.co.za'
+const ORDERS_EMAIL = 'Orders@pointtaken.co.za'
 
 export async function POST(request: Request) {
   try {
